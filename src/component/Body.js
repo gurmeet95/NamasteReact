@@ -1,36 +1,59 @@
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import {restroList} from "../Constant";
 import RestrauntCard from "./RestrauntCard";
-
-// What is state?
-// What is React hooks ? - functions
-// what is useState ?
+import ShimmerUI from "./ShimmerUI";
 
 function filterData(searchText,restaurants){
-    const filterData=restaurants.filter((restaurant)=>restaurant.data.name.includes(searchText));
+    const filterData=restaurants.filter((restaurant)=>restaurant?.data?.name?.toLowerCase()?.includes(searchText.toLowerCase()));
     return filterData;
 
 }
 
 
-const Body= () =>{
-   // const searchText="KFC";  THis way it not work.
-        // searchtext is a local state  variable
-       const[searchText, setSearchText]=useState("");   // To create state vairable 
-       // const[searchText, setSearchText]=useState("KFC"); == const searchvar=useState(); const[searchText, setSearchText]
-     //  ("KFC")  giving default value
-       //usestate() retrun an array first itme as the vairable name and second as function to update the vairable
-       // setSearchText  to set update value
+const Body= () =>{ 
 
-    const [restauraunts,setRestaurants]=useState(restroList);
+    // Avoid Rendering Component
+    const[allRestaurants,setAllRestaurants]= useState([]);
+    const [filteredRestauraunts,setFilteredRestaurants]=useState([]);
+    const[searchText, setSearchText]=useState("");
+    
 
-    return (
+    useEffect(()=>{
+        // API Call with Empty Array
+        getRestaurants();
+    },[]);
+    /*
+    * useEffect is a Hook.(Need to import using named import from React.)
+    * We call this useEffect giving two parameters 1.call Back function ()=> 2.  dependency array [],
+    * Dependency array decide that when our call back function is called.
+    * Suppose we pass [searchText] now this call back function is called only when my searchText is changed.[once after intial render + every time after rerneder(searctext change)]
+    * [] it means it is not depend on anything then it will be called only once and after intial render.
+
+    
+    */
+   async function getRestaurants(){
+    const data=await fetch("https://www.swiggy.com/dapi/restaurants/list/v5?lat=29.4726817&lng=77.7085091&page_type=DESKTOP_WEB_LISTING");
+    const json=await data.json()
+    console.log(json);
+    // let use that api data
+   setAllRestaurants(json?.data?.cards[2]?.data?.data?.cards); // this is a bad way to do that we have to use optional chaining
+    //? optional chaining.
+    setFilteredRestaurants(json?.data?.cards[2]?.data?.data?.cards);
+   }
+   console.log("render");
+   // Conditional rendering
+   // if restraunt is empty => shimmer ui
+   // if restraunt has data => actual data ui
+
+   if(!allRestaurants) return null;  // this is known aws early return //  When i dont have all restraunts  dont render anything.
+   if(filteredRestauraunts?.length===0) return <h1>NO Restraunt Match your Filter!!</h1>
+    return allRestaurants?.length===0 ?(<ShimmerUI/>) : (
     <>
 
         <div className="search-container">
         <input type="text" className="search-input" placeholder="Search" value={searchText}
         onChange={(e)=>{
-            // e.tatget.value= whatever u write in input
+           
             setSearchText(e.target.value);
         }
 
@@ -38,21 +61,16 @@ const Body= () =>{
         ></input>
         <button className="search-button"
         onClick={()=>{
-            // need to filter data.
-         const data=   filterData(searchText,restauraunts);
-         //here my searctext should filter in restaurant.
-            //update the state - restaurants
-            setRestaurants(data);
-            
-
-        }}
-        
-        >Search</button>
-
-        </div>
+          
+         const data=   filterData(searchText,allRestaurants);
+         setFilteredRestaurants(data);
+            }}
+         >Search</button>
+    </div>
        
         <div className="restraunt-list">
-            {restauraunts.map((restaurant) =>{
+        {/** you have to write logic for no restraunts found.  */}
+            {filteredRestauraunts.map((restaurant) =>{
                 return <RestrauntCard {...restaurant.data} key={restaurant.data.id}/>
             }
             )}
@@ -60,12 +78,7 @@ const Body= () =>{
     </>
            
     )
-    /* <input type="text" className="search-input" placeholder="Search" value=""></input> 
-    * in this way we only get search bar but wont able to edit it or type vlaue because
-    * REACT USES ONE WAY DATA BINDING
     
-    
-    */
 
 };
 export default Body;

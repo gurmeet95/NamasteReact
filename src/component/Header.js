@@ -1,13 +1,20 @@
-// export const Title=() =>    name export
+import { useState } from "react";
+const loggedinUser=()=>{
+  // Api call to chech authentication..
+  // Let it have true as of now.
+  return true;
+}
 const Title=() =>(
     <a href="/">
       <img 
        className="logo"
        alt="logo"
-       src="https://yt3.googleusercontent.com/ytc/AMLnZu_EC-ECXAxRAixWGEfMsE1rdSoetBHyxmLNdtCB=s900-c-k-c0x00ffffff-no-rj"/>
+       src="https://img.wongnai.com/p/1920x0/2020/04/12/9b8d85e2be69482f936cff161675197f.jpg"/>
      </a>
      );
      const Header= () =>{
+
+      const[isLoggedIn,setIsLoggedIn]=useState(false);
       return (
        
          <div className="header">
@@ -21,14 +28,23 @@ const Title=() =>(
                  <li>Cart</li>
              </ul>
             </div>
+            {
+              // Any Js Expressions not Statement
+              /* a=10;
+              console.log(a) */// wont because it is staement
+              /* ((a=10),console.log(a)) */ // work because it is expression
+
+              isLoggedIn ? <button onClick={()=>setIsLoggedIn(false)}>Logout</button>:
+               <button onClick={()=>setIsLoggedIn(true)}>Login</button>
+            }
              
          </div>
       )
       
   };
       
-     // There are two ways of exporting
+    
 
-    export default Header;  //if we want to export more than one componet with default we cant.we only export one default
+    export default Header; 
 
-     // export const Title=() this is export directly.
+     
